@@ -1,0 +1,44 @@
+# gitleaks configuration for SecureLLM Gateway.
+# Run:  gitleaks detect --config .gitleaks.toml --source .
+#
+# Extends the gitleaks default ruleset and adds rules for the secret shapes
+# this service explicitly handles, so provider keys can never be committed.
+
+title = "SecureLLM Gateway gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[A-Za-z0-9_-]{20,}'''
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API key"
+regex = '''sk-(proj-|live-)?[A-Za-z0-9_-]{20,}'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "aws-access-key-id"
+description = "AWS access key ID"
+regex = '''\b(AKIA|ASIA|AGPA|AIDA|AROA)[0-9A-Z]{16}\b'''
+keywords = ["AKIA", "ASIA"]
+
+[[rules]]
+id = "jwt"
+description = "JWT token"
+regex = '''eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}'''
+keywords = ["eyJ"]
+
+[allowlist]
+description = "Ignore non-secret paths"
+# No secret-shaped allowlist entries: test/doc fixtures assemble secret shapes
+# at runtime, so there are no full secret-looking literals to allowlist.
+paths = [
+  '''node_modules/''',
+  '''dist/''',
+  '''package-lock\.json''',
+]
